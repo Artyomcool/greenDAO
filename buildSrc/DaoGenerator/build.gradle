@@ -1,21 +1,16 @@
 apply plugin: 'java'
-apply plugin: 'maven'
 apply plugin: 'signing'
 
 def isSnapshot = version.endsWith('-SNAPSHOT')
 def sonatypeRepositoryUrl
-if(isSnapshot) {
+if (isSnapshot) {
     sonatypeRepositoryUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
 } else {
     sonatypeRepositoryUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
-    compile ('org.freemarker:freemarker:2.3.19')
+    compile 'org.freemarker:freemarker:2.3.19'
     testCompile 'junit:junit:4.11'
 }
 

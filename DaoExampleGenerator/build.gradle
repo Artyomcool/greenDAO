@@ -1,27 +1,31 @@
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin:'application'
+//apply plugin: 'java'
+//apply plugin: 'application'
+apply plugin: 'greendao'
 
-mainClassName = "de.greenrobot.daogenerator.gentest.ExampleDaoGenerator"
+//mainClassName = "de.greenrobot.daogenerator.gentest.ExampleDaoGenerator"
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
+//dependencies {
+//    compile project(':DaoGenerator')
+//}
 
-dependencies {
-    compile project(':DaoGenerator')
-}
+//sourceSets {
+//    main {
+//        java {
+//            srcDir 'src'
+//            srcDir 'src-gen'
+//        }
+//    }
+//}
 
-sourceSets {
-    main {
-        java {
-            srcDir 'src'
-            srcDir 'src-gen'
-        }
-    }
-}
+//artifacts {
+//    archives jar
+//}
 
-artifacts {
-    archives jar
+compileGenerator {
+  source = fileTree('src')
+  sourceCompatibility = 1.5
+  targetCompatibility = 1.5
+  classpath = files('../buildSrc/DaoGenerator/build/classes/main')
+  destinationDir = file('build/myClasses')
+  dependencyCacheDir = file('build/myCache')
 }

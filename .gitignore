@@ -1,1 +1,7 @@
 .gradle
+/buildSrc/build/
+/buildSrc/GreenDaoPlugin/build/
+/buildSrc/.nb-gradle/profiles/private/
+/DaoExampleGenerator/.nb-gradle/profiles/private/
+/buildSrc/DaoGenerator/.nb-gradle/profiles/private/
+/buildSrc/GreenDaoPlugin/.nb-gradle/profiles/private/
