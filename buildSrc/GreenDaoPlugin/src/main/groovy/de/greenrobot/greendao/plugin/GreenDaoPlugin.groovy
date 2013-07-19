@@ -4,23 +4,23 @@ import de.greenrobot.greendao.task.GenerateDaoSources;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.gradle.api.Task;
 
 public class GreenDaoPlugin implements Plugin<Project> {
 
   @Override
   public void apply(Project project) {
-    project.task('compileGenerator', type: JavaCompile) << {
-      //source = project.files("src-in")
-      source.each({file -> print file.name})
+    Task generateDaoSources = project.tasks.create(name: 'generateDaoSources', type: GenerateDaoSources) {
+      ormSrcDir = project.file('src/main/orm');
+      schemaVersion = 1;
+      genSrcPackage = "orm.gensrc";
+      genSrcDir = new File(project.buildDir, 'gen-src');
     }
     
-    project.task('generateDaoSources', type: GenerateDaoSources) {
-      inputDir = project.file('input')
-      outputDir = project.file('output')
-      
+    project.afterEvaluate {
+      project.compileDebug.dependsOn(generateDaoSources);
+      project.android.sourceSets.main.java.srcDirs += generateDaoSources.genSrcDir;
     }
-    
-    project.task('build').dependsOn('compileGenerator')
   }
   
 }

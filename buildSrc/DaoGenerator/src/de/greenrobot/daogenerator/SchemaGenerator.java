@@ -17,14 +17,14 @@ import java.util.Map;
 
 public class SchemaGenerator {
   
-  private String sourceDirectory;
+  private File sourceDirectory;
   private Map<String, PropertyType> javaTypeToPropertyType;
-  private Map<Type, Entity> typeToEntity = new HashMap<>();
+  private Map<Type, Entity> typeToEntity = new HashMap<Type, Entity>();
 
-  public SchemaGenerator(String sourceDirectory) {
+  public SchemaGenerator(File sourceDirectory) {
     this.sourceDirectory = sourceDirectory;
     
-    javaTypeToPropertyType = new HashMap<>();
+    javaTypeToPropertyType = new HashMap<String, PropertyType>();
     javaTypeToPropertyType.put("boolean", PropertyType.Boolean);
     javaTypeToPropertyType.put("Boolean", PropertyType.Boolean);
     javaTypeToPropertyType.put("byte", PropertyType.Byte);
@@ -45,12 +45,12 @@ public class SchemaGenerator {
     javaTypeToPropertyType.put("java.util.Date", PropertyType.Date);
   }
 
-  public Schema createSchema(int version, String defaultJavaPackage) {
-    Schema schema = new Schema(version, defaultJavaPackage);
+  public Schema createSchema(int version, String genSrcPackage) {
+    Schema schema = new Schema(version, genSrcPackage);
     
     // Look for the java files.
     JavaDocBuilder builder = new JavaDocBuilder();
-    builder.addSourceTree(new File(sourceDirectory));
+    builder.addSourceTree(sourceDirectory);
     
     // Creates the entities.
     System.out.println("Creates the entities ...\n");
