@@ -8,3 +8,9 @@
 /greendao/.nb-gradle/profiles/private/
 /greendao-example/.nb-gradle/profiles/private/
 /buildSrc/greendao-generator/.nb-gradle/profiles/private/
+/source-generator/.nb-gradle/profiles/private/
+/gradle-plugin/.nb-gradle/profiles/private/
+/gradle-plugin/build/
+/example/.nb-gradle/profiles/private/
+/build/
+/.nb-gradle/profiles/private/

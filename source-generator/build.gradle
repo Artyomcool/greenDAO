@@ -1,0 +1,10 @@
+apply plugin: 'java'
+apply plugin: 'signing'
+
+dependencies {
+  compile 'org.freemarker:freemarker:2.3.19'
+  compile 'com.thoughtworks.qdox:qdox:1.12.1'
+}
+
+sourceCompatibility = "1.5"
+targetCompatibility = "1.5"

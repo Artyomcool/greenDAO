@@ -1,1 +1,1 @@
-include 'greendao', 'greendao-example'
+include 'greendao', 'gradle-plugin', 'source-generator'

@@ -1,0 +1,40 @@
+buildscript {
+  repositories {
+    mavenCentral()
+    mavenLocal()
+  }
+
+  dependencies {
+    classpath "com.android.tools.build:gradle:0.5.1"
+    classpath "com.lemoulinstudio.greendao:gradle-plugin:1.4-SNAPSHOT"
+  }
+}
+
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+apply plugin: 'android'
+apply plugin: 'greendao'
+
+repositories {
+  mavenCentral()
+  mavenLocal()
+}
+
+dependencies {
+  compile "com.lemoulinstudio.greendao:greendao:1.4-SNAPSHOT"
+}
+
+android {
+  compileSdkVersion 17
+  buildToolsVersion "17"
+  
+  defaultConfig {
+    targetSdkVersion 15
+    minSdkVersion 8
+    versionCode 1
+  }
+}
+
+generateDaoSources {
+  genSrcPackage = "de.greenrobot.daoexample";
+}
