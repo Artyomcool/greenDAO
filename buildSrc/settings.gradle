@@ -1,1 +1,1 @@
-include 'GreenDaoPlugin', 'DaoGenerator'
+include 'greendao-gradle-plugin', 'greendao-generator'

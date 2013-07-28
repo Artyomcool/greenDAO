@@ -1,0 +1,31 @@
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath 'com.android.tools.build:gradle:0.5.1'
+  }
+}
+
+apply plugin: 'android'
+apply plugin: 'greendao'
+
+dependencies {
+  compile project(':greendao')
+}
+
+android {
+  compileSdkVersion 17
+  buildToolsVersion "17"
+  
+  defaultConfig {
+    targetSdkVersion 15
+    minSdkVersion 8
+    versionCode 1
+  }
+}
+
+generateDaoSources {
+  genSrcPackage = "de.greenrobot.daoexample";
+}

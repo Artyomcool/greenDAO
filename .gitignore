@@ -5,3 +5,6 @@
 /DaoExampleGenerator/.nb-gradle/profiles/private/
 /buildSrc/DaoGenerator/.nb-gradle/profiles/private/
 /buildSrc/GreenDaoPlugin/.nb-gradle/profiles/private/
+/greendao/.nb-gradle/profiles/private/
+/greendao-example/.nb-gradle/profiles/private/
+/buildSrc/greendao-generator/.nb-gradle/profiles/private/

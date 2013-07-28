@@ -1,0 +1,102 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+repositories {
+  mavenCentral()
+}
+
+sourceCompatibility = 1.5
+targetCompatibility = 1.5
+
+// provided is not supported in Gradle 1.4, see http://issues.gradle.org/browse/GRADLE-784
+// Like this, it won't appear at all in the POM
+configurations {
+  provided
+}
+
+dependencies {
+  provided 'com.google.android:android:4.1.1.4'
+  provided 'com.google.android:android-test:4.1.1.4'
+  provided 'com.google.android:annotations:4.1.1.4'
+  provided 'com.google.android:support-v4:r7'
+}
+
+sourceSets {
+  main {
+    compileClasspath += configurations.provided
+  }
+}
+
+javadoc {
+  classpath += configurations.provided
+  title = " greenDAO ${version} API"
+  options.bottom = 'Available under the Apache License, Version 2.0 - <i>Copyright &#169; 2011-2013 <a href="http://greenrobot.de/">greenrobot.de</a>. All Rights Reserved.</i>'
+  excludes = ['de/greenrobot/dao/internal','de/greenrobot/dao/Internal*']
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from 'build/docs/javadoc'
+}
+
+task sourcesJar(type: Jar) {
+  from sourceSets.main.allSource
+  classifier = 'sources'
+}
+
+artifacts {
+  archives jar
+  archives javadocJar
+  archives sourcesJar
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      pom.project {
+        packaging 'jar'
+        
+        name 'greenDAO'
+        description 'greenDAO is a light and fast ORM for Android'
+        url 'https://github.com/green-coder/greenDAO'
+
+        scm {
+          url 'https://github.com/green-coder/greenDAO'
+          connection 'scm:git@github.com:green-coder/greenDAO.git'
+          developerConnection 'scm:git@github.com:green-coder/greenDAO.git'
+        }
+
+        licenses {
+          license {
+            name 'The Apache Software License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            distribution 'repo'
+          }
+        }
+
+        developers {
+          developer {
+            // The author of the original software.
+            id 'greenrobot'
+            name 'greenrobot'
+          }
+          developer {
+            // The maintainer of this fork.
+            id 'green-coder'
+            name 'Vincent Cantin'
+          }
+        }
+        
+        issueManagement {
+          system 'GitHub Issues'
+          url 'https://github.com/green-coder/greenDAO/issues'
+        }
+               
+        organization {
+          name 'Le Moulin Studio'
+          url 'http://www.le-moulin-studio.com'
+        }
+      }
+    }
+  }
+}

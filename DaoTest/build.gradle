@@ -1,20 +1,18 @@
 apply plugin: 'android'
 
-
 dependencies {
-    compile project(':DaoCore')
-}
-
-
-android {
-    compileSdkVersion 17
+  compile project(':greendao')
 }
 
 android {
-    sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-        }
+  compileSdkVersion 17
+}
+
+android {
+  sourceSets {
+    main {
+      manifest.srcFile 'AndroidManifest.xml'
+      java.srcDirs = ['src']
     }
+  }
 }

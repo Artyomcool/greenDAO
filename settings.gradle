@@ -1,1 +1,1 @@
-include 'DaoCore', 'DaoExample'
+include 'greendao', 'greendao-example'
