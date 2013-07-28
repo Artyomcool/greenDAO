@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
+import org.gradle.api.logging.Logger;
 
 /**
  * Once you have your model created, use this class to generate entities and DAOs.
@@ -37,6 +38,8 @@ import freemarker.template.Template;
  * @author Markus
  */
 public class DaoGenerator {
+  
+    private Logger logger;
 
     private Pattern patternKeepIncludes;
     private Pattern patternKeepFields;
@@ -48,10 +51,12 @@ public class DaoGenerator {
     private Template templateEntity;
     private Template templateDaoUnitTest;
 
-    public DaoGenerator() throws IOException {
-        System.out.println("greenDAO Generator");
-        System.out.println("Copyright 2011-2013 Markus Junginger, greenrobot.de. Licensed under GPL V3.");
-        System.out.println("This program comes with ABSOLUTELY NO WARRANTY");
+    public DaoGenerator(Logger logger) throws IOException {
+        this.logger = logger;
+        
+        logger.info("greenDAO Generator");
+        logger.info("Copyright 2011-2013 Markus Junginger, greenrobot.de. Licensed under GPL V3.");
+        logger.info("This program comes with ABSOLUTELY NO WARRANTY");
 
         patternKeepIncludes = compilePattern("INCLUDES");
         patternKeepFields = compilePattern("FIELDS");
@@ -93,7 +98,7 @@ public class DaoGenerator {
         schema.init2ndPass();
         schema.init3ndPass();
 
-        System.out.println("Processing schema version " + schema.getVersion() + "...");
+        logger.info("Processing schema version " + schema.getVersion() + "...");
 
         List<Entity> entities = schema.getEntities();
         for (Entity entity : entities) {
@@ -108,7 +113,7 @@ public class DaoGenerator {
                 if (!javaFilename.exists()) {
                     generate(templateDaoUnitTest, outDirTestFile, javaPackageTest, classNameTest, schema, entity);
                 } else {
-                    System.out.println("Skipped " + javaFilename.getCanonicalPath());
+                    logger.info("Skipped " + javaFilename.getCanonicalPath());
                 }
             }
         }
@@ -116,7 +121,7 @@ public class DaoGenerator {
         generate(templateDaoSession, outDirFile, schema.getDefaultJavaPackageDao(), "DaoSession", schema, null);
 
         long time = System.currentTimeMillis() - start;
-        System.out.println("Processed " + entities.size() + " entities in " + time + "ms");
+        logger.info("Processed " + entities.size() + " entities in " + time + "ms");
     }
 
     protected File toFileForceExists(String filename) throws IOException {
@@ -146,12 +151,12 @@ public class DaoGenerator {
             try {
                 template.process(root, writer);
                 writer.flush();
-                System.out.println("Written " + file.getCanonicalPath());
+                logger.info("Written " + file.getCanonicalPath());
             } finally {
                 writer.close();
             }
         } catch (Exception ex) {
-            System.err.println("Error while generating " + javaPackage + "." + javaClassName + " ("
+            logger.error("Error while generating " + javaPackage + "." + javaClassName + " ("
                     + outDirFile.getCanonicalPath() + ")");
             throw ex;
         }

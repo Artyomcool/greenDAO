@@ -14,15 +14,18 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.gradle.api.logging.Logger;
 
 public class SchemaGenerator {
   
+  private Logger logger;
   private File sourceDirectory;
   private Map<String, PropertyType> javaTypeToPropertyType;
   private Map<Type, Entity> typeToEntity = new HashMap<Type, Entity>();
 
-  public SchemaGenerator(File sourceDirectory) {
+  public SchemaGenerator(File sourceDirectory, Logger logger) {
     this.sourceDirectory = sourceDirectory;
+    this.logger = logger;
     
     javaTypeToPropertyType = new HashMap<String, PropertyType>();
     javaTypeToPropertyType.put("boolean", PropertyType.Boolean);
@@ -53,7 +56,7 @@ public class SchemaGenerator {
     builder.addSourceTree(sourceDirectory);
     
     // Creates the entities.
-    System.out.println("Creates the entities ...\n");
+    logger.debug("Creates the entities ...\n");
     for (JavaSource javaSource : builder.getSources()) {
       for (JavaClass javaClass : javaSource.getClasses()) {
         Annotation entityAnnotation = getAnnotation(javaClass, de.greenrobot.daogenerator.annotation.Entity.class);
@@ -64,7 +67,7 @@ public class SchemaGenerator {
     }
     
     // Links the entities 1.
-    System.out.println("Links the entities ...\n");
+    logger.debug("Links the entities ...\n");
     for (JavaSource javaSource : builder.getSources()) {
       for (JavaClass javaClass : javaSource.getClasses()) {
         Annotation entityAnnotation = getAnnotation(javaClass, de.greenrobot.daogenerator.annotation.Entity.class);
@@ -75,7 +78,7 @@ public class SchemaGenerator {
     }
     
     // Links the entities 2.
-    System.out.println("Links the entities ...\n");
+    logger.debug("Links the entities ...\n");
     for (JavaSource javaSource : builder.getSources()) {
       for (JavaClass javaClass : javaSource.getClasses()) {
         Annotation entityAnnotation = getAnnotation(javaClass, de.greenrobot.daogenerator.annotation.Entity.class);
@@ -113,7 +116,7 @@ public class SchemaGenerator {
    * Skips all the relational aspect.
    */
   private void createEntity(Schema schema, JavaClass javaClass, Annotation entityAnnotation) {
-    System.out.println("className: " + javaClass.getFullyQualifiedName());
+    logger.debug("className: " + javaClass.getFullyQualifiedName());
     Entity entity = schema.addEntity(javaClass.getName());
     typeToEntity.put(javaClass.asType(), entity);
 
@@ -124,7 +127,7 @@ public class SchemaGenerator {
     entity.addIdProperty();
 
     for (JavaField javaField : javaClass.getFields()) {
-      System.out.println("field: " + javaField.getType().getFullyQualifiedName() + " " + javaField.getName());
+      logger.debug("field: " + javaField.getType().getFullyQualifiedName() + " " + javaField.getName());
       Property.PropertyBuilder propertyBuilder;
       
       PropertyType propertyType = javaTypeToPropertyType.get(javaField.getType().getFullyQualifiedName());
@@ -152,12 +155,12 @@ public class SchemaGenerator {
    * Sets up all the relational aspects of the entity.
    */
   private void linkEntity1(Schema schema, JavaClass javaClass) {
-    System.out.println("className: " + javaClass.getFullyQualifiedName());
+    logger.debug("className: " + javaClass.getFullyQualifiedName());
     
     Entity entity = typeToEntity.get(javaClass.asType());
     
     for (JavaField javaField : javaClass.getFields()) {
-      System.out.println("field: " + javaField.getType().getFullyQualifiedName() + " " + javaField.getName());
+      logger.debug("field: " + javaField.getType().getFullyQualifiedName() + " " + javaField.getName());
       
       Annotation toOneAnnotation = getAnnotation(javaField, ToOne.class);
       if (toOneAnnotation != null) {
@@ -171,23 +174,23 @@ public class SchemaGenerator {
    * Sets up all the relational aspects of the entity.
    */
   private void linkEntity2(Schema schema, JavaClass javaClass) {
-    System.out.println("className: " + javaClass.getFullyQualifiedName());
+    logger.debug("className: " + javaClass.getFullyQualifiedName());
     
     Entity entity = typeToEntity.get(javaClass.asType());
     
     for (JavaField javaField : javaClass.getFields()) {
-      System.out.println("field: " + javaField.getType().getFullyQualifiedName() + " " + javaField.getName());
+      logger.debug("field: " + javaField.getType().getFullyQualifiedName() + " " + javaField.getName());
       
       Annotation toManyAnnotation = getAnnotation(javaField, ToMany.class);
       if (toManyAnnotation != null && javaField.getType().getFullyQualifiedName().equals(List.class.getName())) {
         
         Entity targetEntity = typeToEntity.get(javaField.getType().getActualTypeArguments()[0]);
-        System.out.println("targetEntity = " + targetEntity);
+        logger.debug("targetEntity = " + targetEntity);
         
-        System.out.println("toManyAnnotation.getParameterValue() = " + toManyAnnotation.getParameterValue());
+        logger.debug("toManyAnnotation.getParameterValue() = " + toManyAnnotation.getParameterValue());
         
         String relationName = unString((String) toManyAnnotation. getNamedParameter("relation"));
-        System.out.println("relationName = " + relationName);
+        logger.debug("relationName = " + relationName);
         
         de.greenrobot.daogenerator.ToMany toMany = entity.addToMany(targetEntity,
                 findProperty(targetEntity, relationName + "Id"),

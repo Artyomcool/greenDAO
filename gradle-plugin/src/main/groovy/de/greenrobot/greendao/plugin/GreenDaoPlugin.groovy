@@ -11,6 +11,7 @@ public class GreenDaoPlugin implements Plugin<Project> {
   @Override
   public void apply(Project project) {
     Task generateDaoSources = project.tasks.create(name: 'generateDaoSources', type: GenerateDaoSources) {
+      description = 'Generates the source files for the object-relation mapping.'
       ormSrcDir = project.file('src/main/orm');
       schemaVersion = 1;
       genSrcPackage = "orm.gensrc";

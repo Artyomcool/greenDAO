@@ -38,3 +38,6 @@ android {
 generateDaoSources {
   genSrcPackage = "de.greenrobot.daoexample";
 }
+
+//generateDaoSources.inputs.files.each{println "input " + it}
+//generateDaoSources.outputs.files.each{println "output " + it}
