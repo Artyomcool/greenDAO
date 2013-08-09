@@ -17,14 +17,9 @@
  */
 package de.greenrobot.daogenerator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
 import de.greenrobot.daogenerator.Property.PropertyBuilder;
+
+import java.util.*;
 
 /**
  * Model class for an entity: a Java data object mapped to a data base table. A new entity is added to a {@link Schema}
@@ -47,6 +42,7 @@ import de.greenrobot.daogenerator.Property.PropertyBuilder;
 public class Entity {
     private final Schema schema;
     private final String className;
+    private final int since;
     private final List<Property> properties;
     private List<Property> propertiesColumns;
     private final List<Property> propertiesPk;
@@ -78,9 +74,10 @@ public class Entity {
     private Boolean active;
     private Boolean hasKeepSections;
 
-    Entity(Schema schema, String className) {
+    Entity(Schema schema, String className, int since) {
         this.schema = schema;
         this.className = className;
+        this.since = since;
         properties = new ArrayList<Property>();
         propertiesPk = new ArrayList<Property>();
         propertiesNonPk = new ArrayList<Property>();
@@ -612,6 +609,20 @@ public class Entity {
         if (!properties.contains(property)) {
             throw new RuntimeException("Property " + property + " does not exist in " + this);
         }
+    }
+
+    public int getSince() {
+        return since;
+    }
+
+    public boolean hasAutoUpdateProperty(int version) {
+        List<Property> match = new ArrayList<Property>();
+        for (Property property : properties) {
+            if (property.getSince() == version) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

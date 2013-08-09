@@ -15,6 +15,8 @@
  */
 package de.greenrobot.dao.internal;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import de.greenrobot.dao.DaoException;
 
 /** Helper class to create SQL statements as used by greenDAO internally. */
@@ -128,6 +130,36 @@ public class SqlUtils {
         builder.append(" WHERE ");
         appendColumnsEqValue(builder, tablename, whereColumns);
         return builder.toString();
+    }
+
+    /**
+     * Will add column if doesn't exists. Note, that if the table exists, but empty column will not be added.
+     * You will need to drop table and recreate it manually.
+     * @return true if column was created or exists, false otherwise
+     */
+    public static boolean ensureColumnExists(SQLiteDatabase db, String tableName, String columnName,
+                                             String columnDefinition) {
+        Cursor c = db.query(tableName, null, null, null, null, null, null, "1");
+        if (c == null) {
+            addColumn(db, tableName, columnName, columnDefinition);
+            return true;
+        }
+        try {
+            if (!c.moveToFirst()) {
+                return false;
+            }
+            if (c.getColumnIndex(columnName) == -1) {
+                addColumn(db, tableName, columnName, columnDefinition);
+                return true;
+            }
+        } finally {
+            c.close();
+        }
+        return true;
+    }
+
+    public static void addColumn(SQLiteDatabase db, String tableName, String columnName, String columnDefinition) {
+        db.execSQL("ALTER TABLE [" + tableName + "] ADD COLUMN " + columnName + " " + columnDefinition + ";");
     }
 
 }

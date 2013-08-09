@@ -26,6 +26,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import de.greenrobot.dao.AbstractDaoMaster;
 import de.greenrobot.dao.identityscope.IdentityScopeType;
+import de.greenrobot.dao.internal.SqlUtils;
 
 <#list schema.entities as entity>
 import ${entity.javaPackageDao}.${entity.classNameDao};
@@ -81,6 +82,54 @@ public class DaoMaster extends AbstractDaoMaster {
             dropAllTables(db, true);
             onCreate(db);
         }
+    }
+
+    public static class AutoUpgradeHelper extends OpenHelper {
+
+        private int oldVersion = 0;
+        private int newVersion = 0;
+
+        public AutoUpgradeHelper(Context context, String name, CursorFactory factory) {
+            super(context, name, factory);
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            this.oldVersion = oldVersion;
+            this.newVersion = newVersion;
+            upgrade(db, oldVersion, newVersion);
+        }
+
+        public int getOldVersion() {
+            return oldVersion;
+        }
+
+        public int getNewVersion() {
+            return newVersion;
+        }
+
+    }
+
+    private static void upgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+<#if (schema.version > 1)>
+        switch (oldVersion) {
+<#list 1..schema.version-1 as ver>
+        case ${ver}:
+<#list schema.entities as entity>
+<#if entity.since = ver + 1>
+            ${entity.classNameDao}.createTable(db, true);
+<#elseif entity.hasAutoUpdateProperty(ver + 1)>
+            if (<#list entity.properties as property><#if property.since = ver + 1>
+                !SqlUtils.ensureColumnExists(db, "${entity.tableName}", "${property.columnName}", "${property.columnType}<#if property.constraints??> ${property.constraints}</#if><#if property.default??> DEFAULT ${property.default}</#if>")<#if property_has_next>||<#else>) {
+
+                    ${entity.classNameDao}.dropTable(db, true);
+                    ${entity.classNameDao}.createTable(db, false);
+            }</#if></#if></#list>
+</#if>
+</#list>
+</#list>
+        }
+</#if>
     }
 
     public DaoMaster(SQLiteDatabase db) {

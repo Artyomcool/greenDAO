@@ -102,6 +102,17 @@ public class Property {
             return this;
         }
 
+        public PropertyBuilder since(int version) {
+            property.since = version;
+            return this;
+        }
+
+        public PropertyBuilder since(int version, String _default) {
+            property.since = version;
+            property._default = _default;
+            return this;
+        }
+
         public Property getProperty() {
             return property;
         }
@@ -123,6 +134,9 @@ public class Property {
 
     private boolean unique;
     private boolean notNull;
+
+    private int since;
+    private String _default;
 
     /** Initialized in 2nd pass */
     private String constraints;
@@ -192,6 +206,15 @@ public class Property {
     public Entity getEntity() {
         return entity;
     }
+
+    public int getSince() {
+        return since;
+    }
+
+    public String getDefault() {
+        return _default;
+    }
+
 
     void init2ndPass() {
         initConstraint();

@@ -98,7 +98,11 @@ public class Schema {
      * per table to create table scripts, etc.
      */
     public Entity addEntity(String className) {
-        Entity entity = new Entity(this, className);
+        return addEntity(className, 0);
+    }
+
+    public Entity addEntity(String className, int since) {
+        Entity entity = new Entity(this, className, since);
         entities.add(entity);
         return entity;
     }
