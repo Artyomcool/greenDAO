@@ -52,8 +52,8 @@ public class SchemaGenerator {
     javaTypeToPropertyType.put("java.util.Date", PropertyType.Date);
   }
 
-  public Schema createSchema(int version, String genSrcPackage) {
-    Schema schema = new Schema(version, genSrcPackage);
+  public Schema createSchema(String genSrcPackage) {
+    Schema schema = new Schema(genSrcPackage);
     
     // Look for the java files.
     JavaDocBuilder builder = new JavaDocBuilder();

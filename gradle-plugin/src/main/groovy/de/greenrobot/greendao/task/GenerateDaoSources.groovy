@@ -14,9 +14,6 @@ public class GenerateDaoSources extends DefaultTask {
   def File ormSrcDir;
   
   @Input
-  def int schemaVersion;
-  
-  @Input
   def String genSrcPackage;
   
   @OutputDirectory
@@ -30,7 +27,7 @@ public class GenerateDaoSources extends DefaultTask {
             getLogger().debug(text);
         }
     };
-    Schema schema = schemaGenerator.createSchema(schemaVersion, genSrcPackage);
+    Schema schema = schemaGenerator.createSchema(genSrcPackage);
     new DaoGenerator(){
         @Override
         protected void info(String text) {

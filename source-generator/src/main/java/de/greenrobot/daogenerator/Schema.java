@@ -28,7 +28,7 @@ import java.util.Map;
  * @see <a href="http://greendao-orm.com/documentation/modelling-entities/">Modelling Entities (Documentation page)</a>
  */
 public class Schema {
-    private final int version;
+    private int version = 1;
     private final String defaultJavaPackage;
     private String defaultJavaPackageDao;
     private String defaultJavaPackageTest;
@@ -39,8 +39,7 @@ public class Schema {
     private boolean hasKeepSectionsByDefault;
     private boolean useActiveEntitiesByDefault;
 
-    public Schema(int version, String defaultJavaPackage) {
-        this.version = version;
+    public Schema(String defaultJavaPackage) {
         this.defaultJavaPackage = defaultJavaPackage;
         this.entities = new ArrayList<Entity>();
         initTypeMappings();
@@ -102,6 +101,9 @@ public class Schema {
     }
 
     public Entity addEntity(String className, int since) {
+        if (since >= version) {
+            version = since;
+        }
         Entity entity = new Entity(this, className, since);
         entities.add(entity);
         return entity;
