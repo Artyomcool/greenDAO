@@ -128,7 +128,7 @@ as property>${property.columnName}<#if property_has_next>,</#if></#list>);");
 <#if entity.protobuf>
         if(entity.has${property.propertyName?cap_first}()) {
     </#if>        stmt.bind${toBindType[property.propertyType]}(${property_index + 1}, <#if
-property.propertyType == "Serialized">serializeObject(entity.get${property.propertyName?cap_first}())<#else>entity.get${property.propertyName?cap_first}()</#if><#if
+property.propertyType == "Serialized">serializeObject(entity.get${property.propertyName?cap_first}(), ${property.serializerClass})<#else>entity.get${property.propertyName?cap_first}()</#if><#if
 property.propertyType == "Boolean"> ? 1l: 0l</#if><#if property.propertyType == "Date">.getTime()</#if>);
 <#if entity.protobuf>
         }
@@ -137,7 +137,7 @@ property.propertyType == "Boolean"> ? 1l: 0l</#if><#if property.propertyType == 
         ${property.javaType} ${property.propertyName} = entity.get${property.propertyName?cap_first}();
         if (${property.propertyName} != null) {
             stmt.bind${toBindType[property.propertyType]}(${property_index + 1}, <#if
-property.propertyType == "Serialized">serializeObject(${property.propertyName})<#else>${property.propertyName}</#if><#if
+property.propertyType == "Serialized">serializeObject(${property.propertyName}, ${property.serializerClass})<#else>${property.propertyName}</#if><#if
 property.propertyType == "Boolean"> ? 1l: 0l</#if><#if property.propertyType == "Date">.getTime()</#if>);
         }
 </#if>
@@ -208,7 +208,7 @@ property.propertyType == "Boolean"> ? 1l: 0l</#if><#if property.propertyType == 
             property.propertyType == "Serialized">(${property.javaType}) deserializeObject(</#if>cursor.get${toCursorType[property.propertyType]}(offset + ${property_index})<#if
             property.propertyType == "Boolean"> != 0</#if><#if
             property.propertyType == "Date">)</#if><#if
-            property.propertyType == "Serialized">)</#if><#if property_has_next>,</#if> // ${property.propertyName}
+            property.propertyType == "Serialized">, ${property.serializerClass})</#if><#if property_has_next>,</#if> // ${property.propertyName}
 </#list>        
         );
         return entity;
@@ -235,7 +235,7 @@ property.propertyType == "Boolean"> ? 1l: 0l</#if><#if property.propertyType == 
             property.propertyType == "Serialized">(${property.javaType}) deserializeObject(</#if>cursor.get${toCursorType[property.propertyType]}(offset + ${property_index})<#if
             property.propertyType == "Boolean"> != 0</#if><#if
             property.propertyType == "Date">)</#if><#if
-            property.propertyType == "Serialized">)</#if>);
+            property.propertyType == "Serialized">, ${property.serializerClass})</#if>);
 </#list>
 </#if>
      }

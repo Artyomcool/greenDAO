@@ -116,6 +116,10 @@ public class Property {
         public Property getProperty() {
             return property;
         }
+
+        public void serializer(String serializerClass) {
+            property.serializerClass = serializerClass;
+        }
     }
 
     private final Schema schema;
@@ -126,6 +130,7 @@ public class Property {
 
     private String columnName;
     private String columnType;
+    private String serializerClass;
 
     private boolean primaryKey;
     private boolean pkAsc;
@@ -215,6 +220,9 @@ public class Property {
         return _default;
     }
 
+    public String getSerializerClass() {
+        return serializerClass;
+    }
 
     void init2ndPass() {
         initConstraint();

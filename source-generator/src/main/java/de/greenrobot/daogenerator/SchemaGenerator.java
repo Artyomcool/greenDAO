@@ -2,15 +2,17 @@ package de.greenrobot.daogenerator;
 
 import com.thoughtworks.qdox.JavaDocBuilder;
 import com.thoughtworks.qdox.model.*;
-import de.greenrobot.daogenerator.annotation.Serialized;
-import de.greenrobot.daogenerator.annotation.ToMany;
-import de.greenrobot.daogenerator.annotation.ToOne;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import de.greenrobot.dao.serialization.DefaultSerializer;
+import de.greenrobot.daogenerator.annotation.Serialized;
+import de.greenrobot.daogenerator.annotation.ToMany;
+import de.greenrobot.daogenerator.annotation.ToOne;
 
 public class SchemaGenerator {
 
@@ -30,7 +32,7 @@ public class SchemaGenerator {
 
   public SchemaGenerator(File sourceDirectory) {
     this.sourceDirectory = sourceDirectory;
-    
+
     javaTypeToPropertyType = new HashMap<String, PropertyType>();
     javaTypeToPropertyType.put("boolean", PropertyType.Boolean);
     javaTypeToPropertyType.put("Boolean", PropertyType.Boolean);
@@ -54,7 +56,7 @@ public class SchemaGenerator {
 
   public Schema createSchema(String genSrcPackage) {
     Schema schema = new Schema(genSrcPackage);
-    
+
     // Look for the java files.
     JavaDocBuilder builder = new JavaDocBuilder();
     builder.addSourceTree(sourceDirectory);
@@ -75,7 +77,7 @@ public class SchemaGenerator {
     for (EntityDescriptor descriptor : descriptors) {
       linkEntity2(schema, descriptor.javaClass);
     }
-    
+
     return schema;
   }
 
@@ -98,20 +100,20 @@ public class SchemaGenerator {
         return annotation;
       }
     }
-    
+
     return null;
   }
-  
+
   private Property findProperty(Entity entity, String propertyName) {
     for (Property property : entity.getProperties()) {
       if (property.getPropertyName().equals(propertyName)) {
         return property;
       }
     }
-    
+
     return null;
   }
-  
+
   /**
    * Creates the entity in the schema.
    * Skips all the relational aspect.
@@ -133,18 +135,23 @@ public class SchemaGenerator {
     for (JavaField javaField : javaClass.getFields()) {
       debug("field: " + javaField.getType().getFullyQualifiedName() + " " + javaField.getName());
       Property.PropertyBuilder propertyBuilder;
-      
+
       PropertyType propertyType = javaTypeToPropertyType.get(javaField.getType().getFullyQualifiedName());
       Annotation toOneAnnotation = getAnnotation(javaField, ToOne.class);
       Annotation serializedAnnotation = getAnnotation(javaField, Serialized.class);
       Annotation notNullAnnotation = getAnnotation(javaField, de.greenrobot.daogenerator.annotation.NotNull.class);
       Annotation sinceAnnotation = getAnnotation(javaField, de.greenrobot.daogenerator.annotation.Since.class);
       Annotation uniqueAnnotation = getAnnotation(javaField, de.greenrobot.daogenerator.annotation.Unique.class);
-      
+
       if (propertyType != null) {
         propertyBuilder = entity.addProperty(propertyType, null, javaField.getName());
       } else if (serializedAnnotation != null) {
-        propertyBuilder = entity.addProperty(PropertyType.Serialized, javaField.getType().getFullyQualifiedName(), javaField.getName());
+        propertyBuilder = entity.addSerializedProperty(javaField.getType().getFullyQualifiedName(), javaField.getName());
+        String serializer = (String)serializedAnnotation.getNamedParameter("value");
+        if (serializer == null) {
+            serializer = DefaultSerializer.class.getName() + ".class";
+        }
+        propertyBuilder.serializer(serializer);
       } else if (toOneAnnotation != null) {
         propertyBuilder = entity.addLongProperty(javaField.getName() + "Id");
       } else {
@@ -163,18 +170,18 @@ public class SchemaGenerator {
       }
     }
   }
-  
+
   /**
    * Sets up all the relational aspects of the entity.
    */
   private void linkEntity1(Schema schema, JavaClass javaClass) {
     debug("className: " + javaClass.getFullyQualifiedName());
-    
+
     Entity entity = typeToEntity.get(javaClass.asType());
-    
+
     for (JavaField javaField : javaClass.getFields()) {
       debug("field: " + javaField.getType().getFullyQualifiedName() + " " + javaField.getName());
-      
+
       Annotation toOneAnnotation = getAnnotation(javaField, ToOne.class);
       if (toOneAnnotation != null) {
         Entity targetEntity = typeToEntity.get(javaField.getType());
@@ -182,35 +189,35 @@ public class SchemaGenerator {
       }
     }
   }
-  
+
   /**
    * Sets up all the relational aspects of the entity.
    */
   private void linkEntity2(Schema schema, JavaClass javaClass) {
     debug("className: " + javaClass.getFullyQualifiedName());
-    
+
     Entity entity = typeToEntity.get(javaClass.asType());
-    
+
     for (JavaField javaField : javaClass.getFields()) {
       debug("field: " + javaField.getType().getFullyQualifiedName() + " " + javaField.getName());
-      
+
       Annotation toManyAnnotation = getAnnotation(javaField, ToMany.class);
       if (toManyAnnotation != null && javaField.getType().getFullyQualifiedName().equals(List.class.getName())) {
-        
+
         Entity targetEntity = typeToEntity.get(javaField.getType().getActualTypeArguments()[0]);
         debug("targetEntity = " + targetEntity);
-        
+
         debug("toManyAnnotation.getParameterValue() = " + toManyAnnotation.getParameterValue());
-        
+
         String relationName = unString((String) toManyAnnotation. getNamedParameter("relation"));
         debug("relationName = " + relationName);
-        
+
         de.greenrobot.daogenerator.ToMany toMany = entity.addToMany(targetEntity,
                 findProperty(targetEntity, relationName + "Id"),
                 javaField.getName());
-        
+
         String orderedByStr = unString((String) toManyAnnotation.getNamedParameter("orderedBy"));
-        
+
         toMany.orderAsc(findProperty(targetEntity, orderedByStr));
       }
     }
@@ -231,5 +238,5 @@ public class SchemaGenerator {
   protected void debug(String text) {
       System.out.println(text);
   }
-  
+
 }

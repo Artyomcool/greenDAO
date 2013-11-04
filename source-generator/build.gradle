@@ -4,6 +4,7 @@ apply plugin: 'signing'
 dependencies {
   compile 'org.freemarker:freemarker:2.3.19'
   compile 'com.thoughtworks.qdox:qdox:1.12.1'
+  compile project(':greendao-lib')
   compile gradleApi()
 }
 

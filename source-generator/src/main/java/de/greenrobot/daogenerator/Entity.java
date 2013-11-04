@@ -19,7 +19,12 @@ package de.greenrobot.daogenerator;
 
 import de.greenrobot.daogenerator.Property.PropertyBuilder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Model class for an entity: a Java data object mapped to a data base table. A new entity is added to a {@link Schema}

@@ -19,6 +19,7 @@ package de.greenrobot.dao;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 import android.database.CrossProcessCursor;
@@ -34,11 +35,10 @@ import de.greenrobot.dao.internal.FastCursor;
 import de.greenrobot.dao.internal.TableStatements;
 import de.greenrobot.dao.query.Query;
 import de.greenrobot.dao.query.QueryBuilder;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import de.greenrobot.dao.serialization.Serializer;
+
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.util.Map;
 
 /**
  * Base class for all DAOs: Implements entity operations like insert, load, delete, and query.
@@ -62,6 +62,9 @@ import java.io.ObjectOutputStream;
  * 3.) identityScope
  */
 public abstract class AbstractDao<T, K> {
+    private final Map<Class<? extends Serializer>, Serializer> serializers =
+            new HashMap<Class<? extends Serializer>, Serializer>();
+
     protected final SQLiteDatabase db;
     protected final DaoConfig config;
     protected IdentityScope<K, T> identityScope;
@@ -120,28 +123,38 @@ public abstract class AbstractDao<T, K> {
         return config.nonPkColumns;
     }
     
-    protected byte[] serializeObject(Object obj) {
+    protected byte[] serializeObject(Object obj, Class<? extends Serializer> serializerClass) {
       try {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeUnshared(obj);
-        oos.flush();
-        return baos.toByteArray();
+        return getSerializer(serializerClass).serializeObject(obj);
       }
       catch (IOException e) {
         throw new RuntimeException(e);
       }
     }
 
-    protected Object deserializeObject(byte[] byteArray) {
+    protected Object deserializeObject(byte[] byteArray,
+                                       Class<? extends Serializer> serializerClass) {
       try {
-        ByteArrayInputStream bais = new ByteArrayInputStream(byteArray);
-        ObjectInputStream ois = new ObjectInputStream(bais);
-        return ois.readUnshared();
+        return getSerializer(serializerClass).deserializeObject(byteArray);
       }
       catch (Exception e) {
         throw new RuntimeException(e);
       }
+    }
+
+    protected synchronized Serializer getSerializer(Class<? extends Serializer> serializerClass) {
+        Serializer serializer = serializers.get(serializerClass);
+        if (serializer == null) {
+            try {
+                serializer = serializerClass.newInstance();
+            } catch (InstantiationException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+            serializers.put(serializerClass, serializer);
+        }
+        return serializer;
     }
     
     /**
