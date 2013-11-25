@@ -17,7 +17,9 @@ public class GreenDaoPlugin implements Plugin<Project> {
     }
 
     project.afterEvaluate {
-      project.compileDebug.dependsOn(generateDaoSources);
+      project.android.applicationVariants.all { variant ->
+          variant.javaCompile.dependsOn(generateDaoSources);
+      }
       project.android.sourceSets.main.java.srcDirs += generateDaoSources.genSrcDir;
     }
   }
