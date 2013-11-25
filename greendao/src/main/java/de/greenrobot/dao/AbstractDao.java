@@ -188,21 +188,37 @@ public abstract class AbstractDao<T, K> {
     }
 
     protected T loadUniqueAndCloseCursor(Cursor cursor) {
+        return loadUniqueAndCloseCursor(cursor, false);
+    }
+
+    protected T loadUniqueDeepAndCloseCursor(Cursor cursor) {
+        return loadUniqueAndCloseCursor(cursor, true);
+    }
+
+    protected T loadUniqueAndCloseCursor(Cursor cursor, boolean deep) {
         try {
-            return loadUnique(cursor);
+            return loadUnique(cursor, deep);
         } finally {
             cursor.close();
         }
     }
 
     protected T loadUnique(Cursor cursor) {
+        return loadUnique(cursor, false);
+    }
+
+    protected T loadUniqueDeep(Cursor cursor) {
+        return loadUnique(cursor, true);
+    }
+
+    protected T loadUnique(Cursor cursor, boolean deep) {
         boolean available = cursor.moveToFirst();
         if (!available) {
             return null;
         } else if (!cursor.isLast()) {
             throw new DaoException("Expected unique result, but count was " + cursor.getCount());
         }
-        return loadCurrent(cursor, 0, true);
+        return deep ? loadCurrentDeep(cursor, true) : loadCurrent(cursor, 0, true);
     }
 
     /** Loads all available entities from the database. */
@@ -846,4 +862,15 @@ public abstract class AbstractDao<T, K> {
     /** Returns true if the Entity class can be updated, e.g. for setting the PK after insert. */
     abstract protected boolean isEntityUpdateable();
 
+    protected String getSelectDeep() {
+        throw new UnsupportedOperationException("This DAO has no one-to-one relations");
+    }
+
+    public List<T> loadAllDeepFromCursor(Cursor cursor) {
+        throw new UnsupportedOperationException("This DAO has no one-to-one relations");
+    }
+
+    protected T loadCurrentDeep(Cursor cursor, boolean lock) {
+        throw new UnsupportedOperationException("This DAO has no one-to-one relations");
+    }
 }

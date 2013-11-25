@@ -17,12 +17,20 @@ public final class InternalQueryDaoAccess<T> {
         return dao.loadCurrent(cursor, offset, lock);
     }
 
+    public T loadCurrentDeep(Cursor cursor, boolean lock) {
+        return dao.loadCurrentDeep(cursor, lock);
+    }
+
     public List<T> loadAllAndCloseCursor(Cursor cursor) {
         return dao.loadAllAndCloseCursor(cursor);
     }
 
     public T loadUniqueAndCloseCursor(Cursor cursor) {
         return dao.loadUniqueAndCloseCursor(cursor);
+    }
+
+    public T loadUniqueDeepAndCloseCursor(Cursor cursor) {
+        return dao.loadUniqueDeepAndCloseCursor(cursor);
     }
 
     public TableStatements getStatements() {
@@ -33,4 +41,7 @@ public final class InternalQueryDaoAccess<T> {
         return dao.getStatements();
     }
 
+    public static String getSelectDeep(AbstractDao<?, ?> dao) {
+        return dao.getSelectDeep();
+    }
 }

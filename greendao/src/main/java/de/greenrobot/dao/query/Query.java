@@ -39,19 +39,21 @@ public class Query<T> extends AbstractQuery<T> {
         private final String[] initialValues;
         private final int limitPosition;
         private final int offsetPosition;
+        private final boolean deep;
 
         private ThreadLocalQuery(AbstractDao<T2, ?> dao, String sql, String[] initialValues, int limitPosition,
-                int offsetPosition) {
+                                 int offsetPosition, boolean deep) {
             this.dao = dao;
             this.sql = sql;
             this.initialValues = initialValues;
             this.limitPosition = limitPosition;
             this.offsetPosition = offsetPosition;
+            this.deep = deep;
         }
 
         @Override
         protected Query<T2> initialValue() {
-            return new Query<T2>(this, dao, sql, initialValues.clone(), limitPosition, offsetPosition);
+            return new Query<T2>(this, dao, sql, initialValues.clone(), limitPosition, offsetPosition, deep);
         }
     }
 
@@ -63,20 +65,29 @@ public class Query<T> extends AbstractQuery<T> {
     static <T2> Query<T2> create(AbstractDao<T2, ?> dao, String sql, Object[] initialValues, int limitPosition,
             int offsetPosition) {
         ThreadLocalQuery<T2> threadLocal = new ThreadLocalQuery<T2>(dao, sql, toStringArray(initialValues),
-                limitPosition, offsetPosition);
+                limitPosition, offsetPosition, false);
         return threadLocal.get();
     }
 
+    static <T> Query<T> createDeep(AbstractDao<T, ?> dao, String sql, Object[] initialValues, int limitPosition,
+            int offsetPosition) {
+        ThreadLocalQuery<T> threadLocal = new ThreadLocalQuery<T>(dao, sql, toStringArray(initialValues),
+                limitPosition, offsetPosition, true);
+        return threadLocal.get();
+    }
+
+    private final boolean deep;
     private final int limitPosition;
     private final int offsetPosition;
     private final ThreadLocalQuery<T> threadLocalQuery;
 
     private Query(ThreadLocalQuery<T> threadLocalQuery, AbstractDao<T, ?> dao, String sql, String[] initialValues,
-            int limitPosition, int offsetPosition) {
+            int limitPosition, int offsetPosition, boolean deep) {
         super(dao, sql, initialValues);
         this.threadLocalQuery = threadLocalQuery;
         this.limitPosition = limitPosition;
         this.offsetPosition = offsetPosition;
+        this.deep = deep;
     }
 
     // public void compile() {
@@ -128,6 +139,13 @@ public class Query<T> extends AbstractQuery<T> {
     public List<T> list() {
         checkThread();
         Cursor cursor = dao.getDatabase().rawQuery(sql, parameters);
+        if (deep) {
+            try {
+                return dao.loadAllDeepFromCursor(cursor);
+            } finally {
+                cursor.close();
+            }
+        }
         return daoAccess.loadAllAndCloseCursor(cursor);
     }
 
@@ -139,7 +157,7 @@ public class Query<T> extends AbstractQuery<T> {
     public LazyList<T> listLazy() {
         checkThread();
         Cursor cursor = dao.getDatabase().rawQuery(sql, parameters);
-        return new LazyList<T>(daoAccess, cursor, true);
+        return new LazyList<T>(daoAccess, cursor, true, deep);
     }
 
     /**
@@ -149,7 +167,7 @@ public class Query<T> extends AbstractQuery<T> {
     public LazyList<T> listLazyUncached() {
         checkThread();
         Cursor cursor = dao.getDatabase().rawQuery(sql, parameters);
-        return new LazyList<T>(daoAccess, cursor, false);
+        return new LazyList<T>(daoAccess, cursor, false, deep);
     }
 
     /**
@@ -170,7 +188,8 @@ public class Query<T> extends AbstractQuery<T> {
     public T unique() {
         checkThread();
         Cursor cursor = dao.getDatabase().rawQuery(sql, parameters);
-        return daoAccess.loadUniqueAndCloseCursor(cursor);
+        return deep ? daoAccess.loadUniqueDeepAndCloseCursor(cursor)
+                    : daoAccess.loadUniqueAndCloseCursor(cursor);
     }
 
     /**

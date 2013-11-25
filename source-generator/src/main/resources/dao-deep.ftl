@@ -20,6 +20,8 @@ along with greenDAO Generator.  If not, see <http://www.gnu.org/licenses/>.
 <#if entity.toOneRelations?has_content>
     private String selectDeep;
 
+    /** @inheritdoc */
+    @Override
     protected String getSelectDeep() {
         if (selectDeep == null) {
             StringBuilder builder = new StringBuilder("SELECT ");
@@ -41,7 +43,8 @@ along with greenDAO Generator.  If not, see <http://www.gnu.org/licenses/>.
         }
         return selectDeep;
     }
-    
+
+    @Override
     protected ${entity.className} loadCurrentDeep(Cursor cursor, boolean lock) {
         ${entity.className} entity = loadCurrent(cursor, 0, lock);
         int offset = getAllColumns().length;
@@ -89,6 +92,7 @@ along with greenDAO Generator.  If not, see <http://www.gnu.org/licenses/>.
     }
     
     /** Reads all available rows from the given cursor and returns a list of new ImageTO objects. */
+    @Override
     public List<${entity.className}> loadAllDeepFromCursor(Cursor cursor) {
         int count = cursor.getCount();
         List<${entity.className}> list = new ArrayList<${entity.className}>(count);
@@ -110,7 +114,7 @@ along with greenDAO Generator.  If not, see <http://www.gnu.org/licenses/>.
         }
         return list;
     }
-    
+
     protected List<${entity.className}> loadDeepAllAndCloseCursor(Cursor cursor) {
         try {
             return loadAllDeepFromCursor(cursor);

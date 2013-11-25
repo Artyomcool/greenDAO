@@ -65,7 +65,8 @@ public class QueryBuilder<T> {
     private Integer limit;
 
     private Integer offset;
-    
+    private boolean deep;
+
     /** For internal use by greenDAO only. */
     public static <T2> QueryBuilder<T2> internalCreate(AbstractDao<T2, ?> dao) {
         return new QueryBuilder<T2>(dao);
@@ -242,6 +243,11 @@ public class QueryBuilder<T> {
         return this;
     }
 
+    public QueryBuilder<T> deep() {
+        this.deep = true;
+        return this;
+    }
+
     /**
      * Sets the offset for query results in combination with {@link #limit(int)}. The first {@code limit} results are
      * skipped and the total number of results will be limited by {@code limit}. You cannot use offset without limit.
@@ -258,7 +264,11 @@ public class QueryBuilder<T> {
     public Query<T> build() {
         String select;
         if (joinBuilder == null || joinBuilder.length() == 0) {
-            select = InternalQueryDaoAccess.getStatements(dao).getSelectAll();
+            if (deep) {
+                select = InternalQueryDaoAccess.getSelectDeep(dao);
+            } else {
+                select = InternalQueryDaoAccess.getStatements(dao).getSelectAll();
+            }
         } else {
             select = SqlUtils.createSqlSelect(dao.getTablename(), tablePrefix, dao.getAllColumns());
         }
@@ -296,7 +306,9 @@ public class QueryBuilder<T> {
             DaoLog.d("Values for query: " + values);
         }
 
-        return Query.create(dao, sql, values.toArray(), limitPosition, offsetPosition);
+        return deep
+                ? Query.createDeep(dao, sql, values.toArray(), limitPosition, offsetPosition)
+                : Query.create(dao, sql, values.toArray(), limitPosition, offsetPosition);
     }
 
     /**

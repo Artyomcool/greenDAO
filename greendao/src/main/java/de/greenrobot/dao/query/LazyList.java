@@ -123,15 +123,18 @@ public class LazyList<E> implements List<E>, Closeable {
     }
 
     private final InternalQueryDaoAccess<E> daoAccess;
+    private final boolean deep;
     private final Cursor cursor;
     private final List<E> entities;
     private final int size;
     private final ReentrantLock lock;
     private volatile int loadedCount;
 
-    LazyList(InternalQueryDaoAccess<E> daoAccess, Cursor cursor, boolean cacheEntities) {
+    LazyList(InternalQueryDaoAccess<E> daoAccess, Cursor cursor, boolean cacheEntities,
+             boolean deep) {
         this.cursor = cursor;
         this.daoAccess = daoAccess;
+        this.deep = deep;
         size = cursor.getCount();
         if (cacheEntities) {
             entities = new ArrayList<E>(size);
@@ -256,7 +259,8 @@ public class LazyList<E> implements List<E>, Closeable {
 
     protected E loadEntity(int location) {
         cursor.moveToPosition(location);
-        E entity = daoAccess.loadCurrent(cursor, 0, true);
+        E entity = deep ? daoAccess.loadCurrentDeep(cursor, true)
+                : daoAccess.loadCurrent(cursor, 0, true);
         if (entity == null) {
             throw new DaoException("Loading of entity failed (null) at position " + location);
         }
