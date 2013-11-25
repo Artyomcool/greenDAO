@@ -7,4 +7,5 @@ import java.lang.annotation.Target;
 public @interface Entity {
   String table() default "";
   int since() default 0;
+  Class<?> dao() default Object.class;
 }

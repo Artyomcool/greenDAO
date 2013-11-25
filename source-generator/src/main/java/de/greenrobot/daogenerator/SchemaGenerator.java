@@ -5,6 +5,7 @@ import com.thoughtworks.qdox.model.*;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,6 +129,18 @@ public class SchemaGenerator {
 
     String tableName = unString((String) entityAnnotation.getNamedParameter("table"));
     entity.setTableName(tableName);
+
+    for (JavaClass i : javaClass.getImplementedInterfaces()) {
+        entity.implementsInterface(i.getFullyQualifiedName());
+    }
+
+    String daoImpl = (String) entityAnnotation.getNamedParameter("dao");
+    if (daoImpl != null) {
+      daoImpl = daoImpl.substring(0, daoImpl.lastIndexOf(".class"));
+      if (!Object.class.getName().equals(daoImpl)) {
+        entity.setClassNameDaoImpl(daoImpl);
+      }
+    }
 
     // Create the entity's id.
     entity.addIdProperty();

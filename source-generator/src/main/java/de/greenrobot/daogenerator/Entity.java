@@ -63,6 +63,7 @@ public class Entity {
 
     private String tableName;
     private String classNameDao;
+    private String classNameDaoImpl;
     private String classNameTest;
     private String javaPackage;
     private String javaPackageDao;
@@ -306,6 +307,17 @@ public class Entity {
 
     public void setClassNameDao(String classNameDao) {
         this.classNameDao = classNameDao;
+    }
+
+    public String getClassNameDaoImpl() {
+        if (classNameDaoImpl == null) {
+            return classNameDao;
+        }
+        return classNameDaoImpl;
+    }
+
+    public void setClassNameDaoImpl(String classNameDaoImpl) {
+        this.classNameDaoImpl = classNameDaoImpl;
     }
 
     public String getClassNameTest() {
