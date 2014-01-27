@@ -155,6 +155,7 @@ public class SchemaGenerator {
       Annotation notNullAnnotation = getAnnotation(javaField, de.greenrobot.daogenerator.annotation.NotNull.class);
       Annotation sinceAnnotation = getAnnotation(javaField, de.greenrobot.daogenerator.annotation.Since.class);
       Annotation uniqueAnnotation = getAnnotation(javaField, de.greenrobot.daogenerator.annotation.Unique.class);
+      Annotation indexAnnotation = getAnnotation(javaField, de.greenrobot.daogenerator.annotation.Index.class);
 
       if (propertyType != null) {
         propertyBuilder = entity.addProperty(propertyType, null, javaField.getName());
@@ -176,6 +177,9 @@ public class SchemaGenerator {
       }
       if (uniqueAnnotation != null) {
         propertyBuilder.unique();
+      }
+      if (indexAnnotation != null) {
+        propertyBuilder.index();
       }
       if (sinceAnnotation != null) {
         String version = (String) sinceAnnotation.getNamedParameter("value");
