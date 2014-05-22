@@ -125,6 +125,10 @@ public class SchemaGenerator {
     String since = (String) entityAnnotation.getNamedParameter("since");
 
     Entity entity = schema.addEntity(javaClass.getName(), since == null ? 0 : Integer.parseInt(since));
+    String active = (String) entityAnnotation.getNamedParameter("active");
+    if (active != null && Boolean.valueOf(active)) {
+        entity.setActive(true);
+    }
     typeToEntity.put(javaClass.asType(), entity);
 
     String tableName = unString((String) entityAnnotation.getNamedParameter("table"));
@@ -183,7 +187,9 @@ public class SchemaGenerator {
       }
       if (sinceAnnotation != null) {
         String version = (String) sinceAnnotation.getNamedParameter("value");
-        propertyBuilder.since(Integer.parseInt(version));
+        String _default = unString((String) sinceAnnotation.getNamedParameter("_default"));
+        debug("since " + version +"; default " + _default);
+        propertyBuilder.since(Integer.parseInt(version), _default);
       }
     }
   }
@@ -226,7 +232,7 @@ public class SchemaGenerator {
 
         debug("toManyAnnotation.getParameterValue() = " + toManyAnnotation.getParameterValue());
 
-        String relationName = unString((String) toManyAnnotation. getNamedParameter("relation"));
+        String relationName = unString((String) toManyAnnotation.getNamedParameter("relation"));
         debug("relationName = " + relationName);
 
         de.greenrobot.daogenerator.ToMany toMany = entity.addToMany(targetEntity,

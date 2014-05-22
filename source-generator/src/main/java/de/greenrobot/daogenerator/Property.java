@@ -103,13 +103,14 @@ public class Property {
         }
 
         public PropertyBuilder since(int version) {
-            property.since = version;
+            since(version, null);
             return this;
         }
 
         public PropertyBuilder since(int version, String _default) {
             property.since = version;
-            property._default = _default;
+            property._default = "".equals(_default) ? null : _default;
+            property.schema.checkVersion(version);
             return this;
         }
 

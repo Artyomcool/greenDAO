@@ -193,4 +193,9 @@ public class Schema {
         }
     }
 
+    public void checkVersion(int version) {
+        if (this.version < version) {
+            this.version = version;
+        }
+    }
 }

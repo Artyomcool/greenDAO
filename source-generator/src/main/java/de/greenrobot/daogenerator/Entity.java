@@ -281,6 +281,16 @@ public class Entity {
         return properties;
     }
 
+    public List<Property> getVersionedProperties(int since) {
+        List<Property> res = new ArrayList<Property>();
+        for (Property property : properties) {
+            if (property.getSince() == since) {
+                res.add(property);
+            }
+        }
+        return res;
+    }
+
     public List<Property> getPropertiesColumns() {
         return propertiesColumns;
     }

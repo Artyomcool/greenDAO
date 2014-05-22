@@ -6,4 +6,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Since {
     int value();
+    String _default() default "";
 }
