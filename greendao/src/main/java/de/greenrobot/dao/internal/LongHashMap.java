@@ -148,7 +148,15 @@ public final class LongHashMap<T> {
 
     /** Target load: 0,6 */
     public void reserveRoom(int entryCount) {
-        setCapacity(entryCount * 5 / 3);
+        int newCapacity = entryCount * 5 / 3;
+        if (capacity < newCapacity) {
+            setCapacity(newCapacity);
+        }
+    }
+    public void checkForCompact() {
+        if (capacity / 3 > size) {
+            setCapacity(Math.max(size * 3 / 2, 16));
+        }
     }
 
     public void logStats() {

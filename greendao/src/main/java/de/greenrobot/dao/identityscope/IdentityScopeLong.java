@@ -16,6 +16,7 @@
 package de.greenrobot.dao.identityscope;
 
 import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -29,12 +30,14 @@ import de.greenrobot.dao.internal.LongHashMap;
  *            Entity
  */
 public class IdentityScopeLong<T> implements IdentityScope<Long, T> {
-    private final LongHashMap<Reference<T>> map;
+    private final LongHashMap<ValuedWeakReference<T>> map;
     private final ReentrantLock lock;
+    private final ReferenceQueue<T> referenceQueue;
 
     public IdentityScopeLong() {
-        map = new LongHashMap<Reference<T>>();
+        map = new LongHashMap<ValuedWeakReference<T>>();
         lock = new ReentrantLock();
+        referenceQueue = new ReferenceQueue<T>();
     }
 
     @Override
@@ -84,26 +87,42 @@ public class IdentityScopeLong<T> implements IdentityScope<Long, T> {
     public void put2(long key, T entity) {
         lock.lock();
         try {
-            map.put(key, new WeakReference<T>(entity));
+            checkReferenceQueue();
+            map.put(key, new ValuedWeakReference<T>(key, entity, referenceQueue));
         } finally {
             lock.unlock();
         }
     }
 
     public void put2NoLock(long key, T entity) {
-        map.put(key, new WeakReference<T>(entity));
+        checkReferenceQueue();
+        map.put(key, new ValuedWeakReference<T>(key, entity, referenceQueue));
+    }
+
+    private void checkReferenceQueue() {
+        Reference<? extends T> next;
+        while((next = referenceQueue.poll()) != null) {
+            long key = ((ValuedWeakReference<?>)next).key;
+            map.remove(key);
+        }
+        map.checkForCompact();
     }
 
     @Override
     public boolean detach(Long key, T entity) {
         lock.lock();
         try {
-            if (get(key) == entity && entity != null) {
-                remove(key);
-                return true;
-            } else {
+            long k = key;
+            ValuedWeakReference<T> reference = map.remove(k);
+            T object = reference.get();
+            if (object == null) {
                 return false;
             }
+            if (object == entity) {
+                return true;
+            }
+            map.put(k, reference);
+            return false;
         } finally {
             lock.unlock();
         }
@@ -154,6 +173,16 @@ public class IdentityScopeLong<T> implements IdentityScope<Long, T> {
     @Override
     public void reserveRoom(int count) {
         map.reserveRoom(count);
+    }
+
+    private static class ValuedWeakReference<T> extends WeakReference<T> {
+
+        private final long key;
+
+        public ValuedWeakReference(long key, T referent, ReferenceQueue<? super T> q) {
+            super(referent, q);
+            this.key = key;
+        }
     }
 
 }
