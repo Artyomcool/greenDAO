@@ -181,6 +181,14 @@ public abstract class AbstractDao<T, K> {
         return loadUniqueAndCloseCursor(cursor);
     }
 
+    public T getLoaded(K key) {
+        assertSinglePk();
+        if (key == null || identityScope == null) {
+            return null;
+        }
+        return identityScope.get(key);
+    }
+
     public T loadByRowId(long rowId) {
         String[] idArray = new String[] { Long.toString(rowId) };
         Cursor cursor = db.rawQuery(statements.getSelectByRowId(), idArray);
