@@ -1,27 +1,56 @@
-apply plugin: 'idea'
-apply plugin: 'eclipse'
-apply plugin: 'groovy'
+buildscript {
+    repositories {
+        maven {
+            url 'https://is-artifactory.corp.mail.ru/artifactory/repo'
+            credentials {
+                username = "${artifactory_user}"
+                password = "${artifactory_password}"
+            }
+        }
+        
+    }
+    dependencies {
+        classpath(group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '2.0.9')
+    }
+}
 
-dependencies {
-  compile gradleApi()
-  compile localGroovy()
+allprojects {
+    apply plugin: 'artifactory'
+}
+
+artifactory {
+    contextUrl = "${artifactory_contextUrl}"   //The base Artifactory URL if not overridden by the publisher/resolver
+    publish {
+        repository {
+            repoKey = 'android-artifact-rep'
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+            maven = true
+            
+        }
+    }
+    resolve {
+        repository {
+            repoKey = 'repo'
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+            maven = true
+            
+        }
+    }
 }
 
 subprojects {
   apply plugin: 'idea'
   apply plugin: 'eclipse'
   apply plugin: 'maven'
-  
+
   group = 'com.lemoulinstudio.greendao'
-  version = '1.4-SNAPSHOT'
+  version = '1.6.2'
   
   repositories {
     mavenCentral()
     mavenLocal()
   }
   
-//  tasks.withType(Compile) { 
-//      options.compilerArgs << "-Xlint:deprecation"
-//      options.compilerArgs << "-Xlint:unchecked"
-//  }
 }
