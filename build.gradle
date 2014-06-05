@@ -46,7 +46,7 @@ subprojects {
   apply plugin: 'maven'
 
   group = 'com.lemoulinstudio.greendao'
-  version = '1.6.2'
+  version = '1.6.3'
   
   repositories {
     mavenCentral()

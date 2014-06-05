@@ -11,9 +11,14 @@ import java.util.List;
 import java.util.Map;
 
 import de.greenrobot.dao.serialization.DefaultSerializer;
+import de.greenrobot.daogenerator.annotation.Index;
+import de.greenrobot.daogenerator.annotation.NotNull;
+import de.greenrobot.daogenerator.annotation.PrimaryKey;
 import de.greenrobot.daogenerator.annotation.Serialized;
+import de.greenrobot.daogenerator.annotation.Since;
 import de.greenrobot.daogenerator.annotation.ToMany;
 import de.greenrobot.daogenerator.annotation.ToOne;
+import de.greenrobot.daogenerator.annotation.Unique;
 
 public class SchemaGenerator {
 
@@ -146,8 +151,7 @@ public class SchemaGenerator {
       }
     }
 
-    // Create the entity's id.
-    entity.addIdProperty();
+    boolean hasCustomPrimaryKey = false;
 
     for (JavaField javaField : javaClass.getFields()) {
       debug("field: " + javaField.getType().getFullyQualifiedName() + " " + javaField.getName());
@@ -156,10 +160,11 @@ public class SchemaGenerator {
       PropertyType propertyType = javaTypeToPropertyType.get(javaField.getType().getFullyQualifiedName());
       Annotation toOneAnnotation = getAnnotation(javaField, ToOne.class);
       Annotation serializedAnnotation = getAnnotation(javaField, Serialized.class);
-      Annotation notNullAnnotation = getAnnotation(javaField, de.greenrobot.daogenerator.annotation.NotNull.class);
-      Annotation sinceAnnotation = getAnnotation(javaField, de.greenrobot.daogenerator.annotation.Since.class);
-      Annotation uniqueAnnotation = getAnnotation(javaField, de.greenrobot.daogenerator.annotation.Unique.class);
-      Annotation indexAnnotation = getAnnotation(javaField, de.greenrobot.daogenerator.annotation.Index.class);
+      Annotation notNullAnnotation = getAnnotation(javaField, NotNull.class);
+      Annotation sinceAnnotation = getAnnotation(javaField, Since.class);
+      Annotation uniqueAnnotation = getAnnotation(javaField, Unique.class);
+      Annotation indexAnnotation = getAnnotation(javaField, Index.class);
+      Annotation primaryKeyAnnotation = getAnnotation(javaField, PrimaryKey.class);
 
       if (propertyType != null) {
         propertyBuilder = entity.addProperty(propertyType, null, javaField.getName());
@@ -185,12 +190,19 @@ public class SchemaGenerator {
       if (indexAnnotation != null) {
         propertyBuilder.index();
       }
+      if (primaryKeyAnnotation != null) {
+        propertyBuilder.primaryKey();
+      }
       if (sinceAnnotation != null) {
         String version = (String) sinceAnnotation.getNamedParameter("value");
         String _default = unString((String) sinceAnnotation.getNamedParameter("_default"));
         debug("since " + version +"; default " + _default);
         propertyBuilder.since(Integer.parseInt(version), _default);
       }
+    }
+
+    if (!hasCustomPrimaryKey) {
+        entity.addIdProperty();
     }
   }
 
