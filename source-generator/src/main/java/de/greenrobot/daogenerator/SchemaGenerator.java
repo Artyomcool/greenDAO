@@ -192,6 +192,7 @@ public class SchemaGenerator {
       }
       if (primaryKeyAnnotation != null) {
         propertyBuilder.primaryKey();
+        hasCustomPrimaryKey = true;
       }
       if (sinceAnnotation != null) {
         String version = (String) sinceAnnotation.getNamedParameter("value");
