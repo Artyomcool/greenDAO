@@ -13,7 +13,7 @@ public class GreenDaoPlugin implements Plugin<Project> {
       description = 'Generates the source files for the object-relation mapping.'
       ormSrcDir = project.file('src/main/orm');
       genSrcPackage = "orm.gensrc";
-      genSrcDir = new File(project.buildDir, 'gen-src');
+      genSrcDir = new File(project.buildDir, 'generated/source/gen-src');
     }
 
     project.afterEvaluate {

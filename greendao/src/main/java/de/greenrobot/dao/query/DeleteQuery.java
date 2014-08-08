@@ -28,7 +28,7 @@ import de.greenrobot.dao.AbstractDao;
  * @param <T>
  *            The enitity class the query will delete from.
  */
-public class DeleteQuery<T> extends AbstractQuery<T> {
+public class DeleteQuery<T> extends AbstractQuery<T, DeleteQuery<T>> {
     private final static class ThreadLocalQuery<T2> extends ThreadLocal<DeleteQuery<T2>> {
         private final String sql;
         private final AbstractDao<T2, ?> dao;

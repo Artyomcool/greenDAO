@@ -32,7 +32,7 @@ import de.greenrobot.dao.DaoException;
 // TODO support long, double and other types, not just Strings, for parameters
 // TODO Make parameters setable by Property (if unique in paramaters)
 // TODO Query for PKs/ROW IDs
-public class Query<T> extends AbstractQuery<T> {
+public class Query<T> extends AbstractQuery<T, Query<T>> {
     private final static class ThreadLocalQuery<T2> extends ThreadLocal<Query<T2>> {
         private final String sql;
         private final AbstractDao<T2, ?> dao;
@@ -94,6 +94,7 @@ public class Query<T> extends AbstractQuery<T> {
     // // TODO implement compile
     // }
 
+    @Override
     public Query<T> forCurrentThread() {
         Query<T> query = threadLocalQuery.get();
         String[] initialValues = threadLocalQuery.initialValues;

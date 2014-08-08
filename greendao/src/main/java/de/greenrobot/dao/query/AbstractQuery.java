@@ -28,7 +28,7 @@ import de.greenrobot.dao.InternalQueryDaoAccess;
  *            The enitity class the query will return results for.
  */
 // TODO support long, double, blob types directly
-abstract class AbstractQuery<T> {
+public abstract class AbstractQuery<T, E extends AbstractQuery<T, E>> {
     protected final AbstractDao<T, ?> dao;
     protected final InternalQueryDaoAccess<T> daoAccess;
     protected final String sql;
@@ -60,6 +60,8 @@ abstract class AbstractQuery<T> {
     // public void compile() {
     // // TODO implement compile
     // }
+
+    public abstract E forCurrentThread();
 
     /**
      * Sets the parameter (0 based) using the position in which it was added during building the query.

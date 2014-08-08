@@ -4,7 +4,7 @@ import android.database.Cursor;
 import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.DaoException;
 
-public class CountQuery<T> extends AbstractQuery<T> {
+public class CountQuery<T> extends AbstractQuery<T, CountQuery<T>> {
 
     private final static class ThreadLocalQuery<T2> extends ThreadLocal<CountQuery<T2>> {
         private final String sql;
