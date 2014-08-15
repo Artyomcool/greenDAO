@@ -80,6 +80,14 @@ public class Property {
             return this;
         }
 
+        public PropertyBuilder index(int since) {
+            Index index = new Index();
+            index.setSince(since);
+            index.addProperty(property);
+            property.entity.addIndex(index);
+            return this;
+        }
+
         public PropertyBuilder indexAsc(String indexNameOrNull, boolean isUnique) {
             Index index = new Index();
             index.addPropertyAsc(property);

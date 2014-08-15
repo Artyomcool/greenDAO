@@ -118,13 +118,18 @@ public class DaoMaster extends AbstractDaoMaster {
 <#list schema.entities as entity>
 <#if entity.since = ver + 1>
             ${entity.classNameDao}.createTable(db, true);
-<#elseif entity.hasAutoUpdateProperty(ver + 1)>
+<#else>
+    <#if entity.hasAutoUpdateProperty(ver + 1)>
             if (<#list entity.getVersionedProperties(ver + 1) as property>
                 !SqlUtils.ensureColumnExists(db, "${entity.tableName}", "${property.columnName}", "${property.columnType}<#if property.constraints??> ${property.constraints}</#if><#if property.default??> DEFAULT ${property.default}</#if>")<#if property_has_next>||<#else>) {
 
                     ${entity.classNameDao}.dropTable(db, true);
                     ${entity.classNameDao}.createTable(db, false);
             }</#if></#list>
+    </#if>
+    <#list entity.getVersionedIndexes(ver + 1) as index>
+            ${entity.classNameDao}.create${index.methodName()}Index(db, true);
+    </#list>
 </#if>
 </#list>
 </#list>

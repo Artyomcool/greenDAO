@@ -21,6 +21,15 @@ package de.greenrobot.daogenerator;
 public class Index extends PropertyOrderList {
     private String name;
     private boolean unique;
+    private int since;
+
+    public int getSince() {
+        return since;
+    }
+
+    public void setSince(int since) {
+        this.since = since;
+    }
 
     public String getName() {
         return name;
@@ -38,6 +47,16 @@ public class Index extends PropertyOrderList {
 
     public boolean isUnique() {
         return unique;
+    }
+
+    public String methodName() {
+        StringBuilder name = new StringBuilder();
+        for (Property property : getProperties()) {
+            String propertyName = property.getPropertyName();
+            propertyName = propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+            name.append(propertyName);
+        }
+        return name.toString();
     }
 
 }

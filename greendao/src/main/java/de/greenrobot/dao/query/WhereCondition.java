@@ -31,11 +31,14 @@ public interface WhereCondition {
 
     void appendValuesTo(List<Object> values);
 
+    WhereCondition noIndex();
+
     public abstract static class AbstractCondition implements WhereCondition {
 
         protected final boolean hasSingleValue;
         protected final Object value;
         protected final Object[] values;
+        protected boolean noIndex;
 
         public AbstractCondition() {
             hasSingleValue = false;
@@ -66,6 +69,12 @@ public interface WhereCondition {
                 }
             }
         }
+
+        public WhereCondition noIndex() {
+            noIndex = true;
+            return this;
+        }
+
     }
 
     public static class PropertyCondition extends AbstractCondition {
@@ -136,6 +145,9 @@ public interface WhereCondition {
 
         @Override
         public void appendTo(StringBuilder builder, String tableAlias) {
+            if (noIndex) {
+                builder.append('+');
+            }
             if (tableAlias != null) {
                 builder.append(tableAlias).append('.');
             }

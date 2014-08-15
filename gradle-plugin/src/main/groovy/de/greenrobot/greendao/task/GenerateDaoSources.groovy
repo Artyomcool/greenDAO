@@ -24,7 +24,7 @@ public class GenerateDaoSources extends DefaultTask {
     SchemaGenerator schemaGenerator = new SchemaGenerator(ormSrcDir) {
         @Override
         protected void debug(String text) {
-            getLogger().debug(text);
+            getLogger().info(text);
         }
     };
     Schema schema = schemaGenerator.createSchema(genSrcPackage);

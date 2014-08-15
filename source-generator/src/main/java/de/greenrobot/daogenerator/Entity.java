@@ -291,6 +291,16 @@ public class Entity {
         return res;
     }
 
+    public List<Index> getVersionedIndexes(int since) {
+        List<Index> res = new ArrayList<Index>();
+        for (Index index : indexes) {
+            if (index.getSince() == since) {
+                res.add(index);
+            }
+        }
+        return res;
+    }
+
     public List<Property> getPropertiesColumns() {
         return propertiesColumns;
     }

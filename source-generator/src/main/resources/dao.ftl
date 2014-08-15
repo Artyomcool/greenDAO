@@ -102,15 +102,22 @@ public class ${entity.classNameDao} extends AbstractDao<${entity.className}, ${e
 <#list entity.propertiesColumns as property>
                 "'${property.columnName}' ${property.columnType}<#if property.constraints??> ${property.constraints} </#if><#if property_has_next>," +<#else>);");</#if> // ${property_index}: ${property.propertyName}
 </#list>
-<#if entity.indexes?has_content >
-        // Add Indexes
+
 <#list entity.indexes as index>
-        db.execSQL("CREATE <#if index.unique>UNIQUE </#if>INDEX " + constraint + "${index.name} ON ${entity.tableName}" +
-                " (<#list index.properties 
-as property>${property.columnName}<#if property_has_next>,</#if></#list>);");
+        create${index.methodName()}Index(db, ifNotExists);
 </#list>
-</#if>         
     }
+
+<#list entity.indexes as index>
+    public static void create${index.methodName()}Index(SQLiteDatabase db, boolean ifNotExists) {
+        String constraint = ifNotExists ? "IF NOT EXISTS ": "";
+        db.execSQL("CREATE <#if index.unique>UNIQUE </#if>INDEX " + constraint + "${index.name} ON ${entity.tableName}" +
+                " (<#list index.properties
+as property>${property.columnName}<#if property_has_next>,</#if></#list>);");
+    }
+</#list>
+
+
 
     /** Drops the underlying database table. */
     public static void dropTable(SQLiteDatabase db, boolean ifExists) {

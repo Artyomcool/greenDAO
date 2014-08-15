@@ -2,6 +2,11 @@ package de.greenrobot.daogenerator;
 
 import com.thoughtworks.qdox.JavaDocBuilder;
 import com.thoughtworks.qdox.model.*;
+import com.thoughtworks.qdox.model.annotation.AnnotationConstant;
+import com.thoughtworks.qdox.model.annotation.AnnotationValue;
+import com.thoughtworks.qdox.model.annotation.AnnotationValueList;
+import com.thoughtworks.qdox.model.annotation.EvaluatingVisitor;
+import com.thoughtworks.qdox.model.annotation.RecursiveAnnotationVisitor;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -25,10 +30,12 @@ public class SchemaGenerator {
   private static class EntityDescriptor {
     final JavaClass javaClass;
     final Annotation entityAnnotation;
+    final Annotation indexesAnnotation;
 
-    EntityDescriptor(JavaClass javaClass, Annotation entityAnnotation) {
+    EntityDescriptor(JavaClass javaClass, Annotation entityAnnotation, Annotation indexesAnnotation) {
         this.javaClass = javaClass;
         this.entityAnnotation = entityAnnotation;
+        this.indexesAnnotation = indexesAnnotation;
     }
   }
 
@@ -71,7 +78,7 @@ public class SchemaGenerator {
 
     debug("Creates the entities ...\n");
     for (EntityDescriptor descriptor : descriptors) {
-        createEntity(schema, descriptor.javaClass, descriptor.entityAnnotation);
+        createEntity(schema, descriptor.javaClass, descriptor.entityAnnotation, descriptor.indexesAnnotation);
     }
 
     debug("Links the entities 1 ...\n");
@@ -91,9 +98,10 @@ public class SchemaGenerator {
       List<EntityDescriptor> descriptors = new ArrayList<EntityDescriptor>();
       for (JavaSource javaSource : builder.getSources()) {
         for (JavaClass javaClass : javaSource.getClasses()) {
-          Annotation entityAnnotation = getAnnotation(javaClass, de.greenrobot.daogenerator.annotation.Entity.class);
+            Annotation entityAnnotation = getAnnotation(javaClass, de.greenrobot.daogenerator.annotation.Entity.class);
+            Annotation indexesAnnotation = getAnnotation(javaClass, de.greenrobot.daogenerator.annotation.Indexes.class);
           if (entityAnnotation != null) {
-            descriptors.add(new EntityDescriptor(javaClass, entityAnnotation));
+            descriptors.add(new EntityDescriptor(javaClass, entityAnnotation, indexesAnnotation));
           }
         }
       }
@@ -124,12 +132,12 @@ public class SchemaGenerator {
    * Creates the entity in the schema.
    * Skips all the relational aspect.
    */
-  private void createEntity(Schema schema, JavaClass javaClass, Annotation entityAnnotation) {
+  private void createEntity(Schema schema, JavaClass javaClass, Annotation entityAnnotation, Annotation indexesAnnotation) {
     debug("className: " + javaClass.getFullyQualifiedName());
 
     String since = (String) entityAnnotation.getNamedParameter("since");
 
-    Entity entity = schema.addEntity(javaClass.getName(), since == null ? 0 : Integer.parseInt(since));
+    final Entity entity = schema.addEntity(javaClass.getName(), since == null ? 0 : Integer.parseInt(since));
     String active = (String) entityAnnotation.getNamedParameter("active");
     if (active != null && Boolean.valueOf(active)) {
         entity.setActive(true);
@@ -152,6 +160,7 @@ public class SchemaGenerator {
     }
 
     boolean hasCustomPrimaryKey = false;
+    final Map<String, Property> propertyMap = new HashMap<String, Property>();
 
     for (JavaField javaField : javaClass.getFields()) {
       debug("field: " + javaField.getType().getFullyQualifiedName() + " " + javaField.getName());
@@ -181,6 +190,8 @@ public class SchemaGenerator {
         continue;
       }
 
+      propertyMap.put(javaField.getName(), propertyBuilder.getProperty());
+
       if (notNullAnnotation != null) {
         propertyBuilder.notNull();
       }
@@ -188,7 +199,9 @@ public class SchemaGenerator {
         propertyBuilder.unique();
       }
       if (indexAnnotation != null) {
-        propertyBuilder.index();
+        String version = (String) indexAnnotation.getNamedParameter("since");
+        int sinceVersion = version == null ? 0 : Integer.parseInt(version);
+        propertyBuilder.index(sinceVersion);
       }
       if (primaryKeyAnnotation != null) {
         propertyBuilder.primaryKey();
@@ -197,13 +210,46 @@ public class SchemaGenerator {
       if (sinceAnnotation != null) {
         String version = (String) sinceAnnotation.getNamedParameter("value");
         String _default = unString((String) sinceAnnotation.getNamedParameter("_default"));
-        debug("since " + version +"; default " + _default);
         propertyBuilder.since(Integer.parseInt(version), _default);
       }
     }
 
     if (!hasCustomPrimaryKey) {
         entity.addIdProperty();
+    }
+
+    if (indexesAnnotation != null) {
+        AnnotationValue value = indexesAnnotation.getProperty("value");
+        value.accept(new RecursiveAnnotationVisitor() {
+            @java.lang.Override
+            public java.lang.Object visitAnnotation(Annotation annotation) {
+                AnnotationValue sinceValue = annotation.getProperty("since");
+                int since = sinceValue == null ? 0 : Integer.parseInt((String)sinceValue.getParameterValue());
+
+                final List<String> fields = new ArrayList<String>();
+                AnnotationValue value = annotation.getProperty("value");
+                value.accept(new RecursiveAnnotationVisitor() {
+                    @Override
+                    public Object visitAnnotationConstant(AnnotationConstant constant) {
+                        fields.add(constant.getValue() + "");
+                        return null;
+                    }
+                });
+
+                de.greenrobot.daogenerator.Index index = new de.greenrobot.daogenerator.Index();
+                index.setSince(since);
+                for (String field : fields) {
+                    Property property = propertyMap.get(field);
+                    if (property == null) {
+                        throw new IllegalArgumentException("No such field: " + field);
+                    }
+                    index.addProperty(property);
+                }
+                entity.addIndex(index);
+
+                return null;
+            }
+        });
     }
   }
 
