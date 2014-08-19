@@ -23,6 +23,7 @@ import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.AbstractDaoSession;
 import de.greenrobot.dao.DaoException;
 import de.greenrobot.dao.DaoLog;
+import de.greenrobot.dao.Index;
 import de.greenrobot.dao.InternalQueryDaoAccess;
 import de.greenrobot.dao.Property;
 import de.greenrobot.dao.internal.SqlUtils;
@@ -66,6 +67,8 @@ public class QueryBuilder<T> {
 
     private Integer offset;
     private boolean deep;
+
+    private String indexedBy;
 
     /** For internal use by greenDAO only. */
     public static <T2> QueryBuilder<T2> internalCreate(AbstractDao<T2, ?> dao) {
@@ -257,6 +260,11 @@ public class QueryBuilder<T> {
         return this;
     }
 
+    public QueryBuilder<T> indexedBy(Index index) {
+        this.indexedBy = index.getName();
+        return this;
+    }
+
     /**
      * Builds a reusable query object (Query objects can be executed more efficiently than creating a QueryBuilder for
      * each execution.
@@ -274,7 +282,7 @@ public class QueryBuilder<T> {
         }
         StringBuilder builder = new StringBuilder(select);
 
-        appendWhereClause(builder, tablePrefix);
+        appendIndexedByAndWhereClause(builder, tablePrefix);
 
         if (orderBuilder != null && orderBuilder.length() > 0) {
             builder.append(" ORDER BY ").append(orderBuilder);
@@ -319,7 +327,7 @@ public class QueryBuilder<T> {
         String tablename = dao.getTablename();
         String baseSql = SqlUtils.createSqlDelete(tablename, null);
         StringBuilder builder = new StringBuilder(baseSql);
-        appendWhereClause(builder, tablename);
+        appendIndexedByAndWhereClause(builder, tablename);
         String sql = builder.toString();
 
         if (LOG_SQL) {
@@ -340,7 +348,7 @@ public class QueryBuilder<T> {
         String tablename = dao.getTablename();
         String baseSql = SqlUtils.createSqlSelectCountStar(tablename);
         StringBuilder builder = new StringBuilder(baseSql);
-        appendWhereClause(builder, tablename);
+        appendIndexedByAndWhereClause(builder, tablename);
         String sql = builder.toString();
 
         if (LOG_SQL) {
@@ -353,8 +361,11 @@ public class QueryBuilder<T> {
         return CountQuery.create(dao, sql, values.toArray());
     }
 
-    private void appendWhereClause(StringBuilder builder, String tablePrefixOrNull) {
+    private void appendIndexedByAndWhereClause(StringBuilder builder, String tablePrefixOrNull) {
         values.clear();
+        if (indexedBy != null) {
+            builder.append(" INDEXED BY ").append(indexedBy);
+        }
         if (!whereConditions.isEmpty()) {
             builder.append(" WHERE ");
             ListIterator<WhereCondition> iter = whereConditions.listIterator();

@@ -33,6 +33,7 @@ import android.database.sqlite.SQLiteStatement;
 
 import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.Property;
+import de.greenrobot.dao.Index;
 <#if entity.toOneRelations?has_content>
 import de.greenrobot.dao.internal.SqlUtils;
 </#if>
@@ -72,6 +73,16 @@ public class ${entity.classNameDao} extends AbstractDao<${entity.className}, ${e
     public static class Properties {
 <#list entity.propertiesColumns as property>
         public final static Property ${property.propertyName?cap_first} = new Property(${property_index}, ${property.javaType}.class, "${property.propertyName}", ${property.primaryKey?string}, "${property.columnName}");
+</#list>
+    };
+
+    /**
+     * Indexes of entity ${entity.className}.<br/>
+     * Can be used for QueryBuilder and for referencing indexes names.
+    */
+    public static class Indexes {
+<#list entity.indexes as index>
+        public final static Index ${index.fieldName()} = new Index("${index.name}");
 </#list>
     };
 

@@ -49,6 +49,17 @@ public class Index extends PropertyOrderList {
         return unique;
     }
 
+    public String fieldName() {
+        StringBuilder name = new StringBuilder();
+        for (Property property : getProperties()) {
+            String propertyName = property.getPropertyName();
+            propertyName = propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+            name.append(propertyName).append('_');
+        }
+        name.setLength(name.length() - 1);
+        return name.toString();
+    }
+
     public String methodName() {
         StringBuilder name = new StringBuilder();
         for (Property property : getProperties()) {
