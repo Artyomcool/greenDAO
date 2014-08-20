@@ -140,6 +140,11 @@ property>${property.javaType} ${property.propertyName}<#if property_has_next>, <
     public ${toOne.targetEntity.className} get${toOne.name?cap_first}() {
 <#if toOne.useFkProperty>
         ${toOne.fkProperties[0].javaType} __key = this.${toOne.fkProperties[0].propertyName};
+        <#if !toOne.fkProperties[0].notNull>
+        if (__key == null) {
+            return null;
+        }
+        </#if>
         if (${toOne.name}__resolvedKey == null || <#--
         --><#if toOne.resolvedKeyUseEquals[0]>!${toOne.name}__resolvedKey.equals(__key)<#--
         --><#else>${toOne.name}__resolvedKey != __key</#if>) {
