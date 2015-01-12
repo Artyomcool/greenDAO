@@ -18,6 +18,7 @@ package de.greenrobot.dao.internal;
 import android.content.ContentResolver;
 import android.database.CharArrayBuffer;
 import android.database.ContentObserver;
+import android.database.CrossProcessCursor;
 import android.database.Cursor;
 import android.database.CursorWindow;
 import android.database.DataSetObserver;
@@ -25,7 +26,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 /** Internal class used by greenDAO. */
-final public class FastCursor implements Cursor {
+final public class FastCursor implements CrossProcessCursor {
 
     private final CursorWindow window;
     private int position;
@@ -250,6 +251,18 @@ final public class FastCursor implements Cursor {
     /** Since API level 11 */
     public int getType(int columnIndex) {
         throw new UnsupportedOperationException();
+    }
+
+    public CursorWindow getWindow() {
+        return window;
+    }
+
+    public void fillWindow(int position, CursorWindow window) {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean onMove(int oldPosition, int newPosition) {
+        return true;
     }
 
 }

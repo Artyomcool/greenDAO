@@ -16,6 +16,11 @@ buildscript {
 
 allprojects {
     apply plugin: 'artifactory'
+
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+
 }
 
 artifactory {
@@ -46,7 +51,7 @@ subprojects {
   apply plugin: 'maven'
 
   group = 'com.lemoulinstudio.greendao'
-  version = '1.7.7'
+  version = '1.8.4'
   
   repositories {
     mavenCentral()

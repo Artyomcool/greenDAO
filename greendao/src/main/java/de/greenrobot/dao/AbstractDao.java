@@ -132,6 +132,10 @@ public abstract class AbstractDao<T, K> {
       }
     }
 
+    protected byte[] readBlob(Cursor cursor, int column) {
+        return cursor.getBlob(column);
+    }
+
     protected Object deserializeObject(byte[] byteArray,
                                        Class<? extends Serializer> serializerClass) {
       try {
