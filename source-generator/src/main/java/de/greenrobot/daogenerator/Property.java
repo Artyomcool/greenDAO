@@ -85,6 +85,7 @@ public class Property {
             index.setSince(since);
             index.addProperty(property);
             property.entity.addIndex(index);
+            property.schema.checkVersion(since);
             return this;
         }
 

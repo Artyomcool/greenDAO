@@ -101,9 +101,7 @@ public class Schema {
     }
 
     public Entity addEntity(String className, int since) {
-        if (since >= version) {
-            version = since;
-        }
+        checkVersion(since);
         Entity entity = new Entity(this, className, since);
         entities.add(entity);
         return entity;
